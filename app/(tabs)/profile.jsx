@@ -1,6 +1,6 @@
+import { useAuth } from "@/context/AuthContext";
 import React, { useState } from "react";
 import {
-  Image,
   Modal,
   StyleSheet,
   Text,
@@ -10,27 +10,21 @@ import {
 } from "react-native";
 
 export default function Profile() {
-  const [user, setUser] = useState({
-    name: "John Doe",
-    email: "johndoe@email.com",
-    bio: "Passionate about learning and sharing skills!",
-    skillsCount: 5,
-    exchanges: 3,
-    avatar: "https://via.placeholder.com/150",
-  });
+  // const [user, setUser] = useState(null);
+  const { user } = useAuth();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editedUser, setEditedUser] = useState(user);
 
   const handleSave = () => {
-    setUser(editedUser);
+    // setUser(editedUser);
     setModalVisible(false);
   };
 
   return (
     <View style={styles.container}>
       {/* Profile Picture */}
-      <Image source={{ uri: user.avatar }} style={styles.avatar} />
+      {/* <Image source={{ uri: user.avatar }} style={styles.avatar} /> */}
 
       {/* User Info */}
       <Text style={styles.name}>{user.name}</Text>

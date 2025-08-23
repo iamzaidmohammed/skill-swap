@@ -7,18 +7,36 @@ export default function SignupScreen() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const { signup } = useAuth();
   const router = useRouter();
 
-  const handleSignup = () => {
-    signup(name, email, password);
-    router.replace("/(tabs)/home");
+  const handleSignup = async () => {
+    try {
+      await signup(name, email, password);
+      router.replace("/(tabs)/home");
+    } catch (err) {
+      setError(err);
+    }
   };
 
   return (
     <View style={{ flex: 1, justifyContent: "center", padding: 20 }}>
       <Text style={{ fontSize: 24, marginBottom: 30, textAlign: "center" }}>
         Sign Up
+      </Text>
+
+      <Text
+        style={{
+          marginBottom: 5,
+          color: "red",
+          textAlign: "center",
+          fontWeight: "bold",
+        }}
+      >
+        {setTimeout(() => {
+          error && setError("");
+        }, 3000) && error}
       </Text>
 
       {/* Name Field */}

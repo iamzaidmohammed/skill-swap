@@ -6,18 +6,35 @@ import { useAuth } from "../../context/AuthContext";
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const { login } = useAuth();
   const router = useRouter();
 
-  const handleLogin = () => {
-    login(email, password);
-    router.replace("/(tabs)/home");
+  const handleLogin = async () => {
+    try {
+      await login(email, password);
+      router.replace("/(tabs)/home");
+    } catch (err) {
+      setError(err);
+    }
   };
-
   return (
     <View style={{ flex: 1, justifyContent: "center", padding: 20 }}>
       <Text style={{ fontSize: 24, marginBottom: 30, textAlign: "center" }}>
         Login
+      </Text>
+
+      <Text
+        style={{
+          marginBottom: 5,
+          color: "red",
+          textAlign: "center",
+          fontWeight: "bold",
+        }}
+      >
+        {setTimeout(() => {
+          error && setError("");
+        }, 3000) && error}
       </Text>
 
       <View style={{ marginBottom: 15 }}>
