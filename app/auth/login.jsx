@@ -1,7 +1,7 @@
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useAuth } from "../../context/AuthContext";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -10,32 +10,39 @@ export default function LoginScreen() {
   const { login } = useAuth();
   const router = useRouter();
 
+  useEffect(() => {
+    if (!error) return;
+    const t = setTimeout(() => setError(""), 3000);
+    return () => clearTimeout(t);
+  }, [error]);
+
   const handleLogin = async () => {
     try {
       await login(email, password);
       router.replace("/(tabs)/home");
     } catch (err) {
-      setError(err);
+      setError(String(err));
     }
   };
+
   return (
     <View style={{ flex: 1, justifyContent: "center", padding: 20 }}>
       <Text style={{ fontSize: 24, marginBottom: 30, textAlign: "center" }}>
         Login
       </Text>
 
-      <Text
-        style={{
-          marginBottom: 5,
-          color: "red",
-          textAlign: "center",
-          fontWeight: "bold",
-        }}
-      >
-        {setTimeout(() => {
-          error && setError("");
-        }, 3000) && error}
-      </Text>
+      {error ? (
+        <Text
+          style={{
+            marginBottom: 5,
+            color: "red",
+            textAlign: "center",
+            fontWeight: "bold",
+          }}
+        >
+          {error}
+        </Text>
+      ) : null}
 
       <View style={{ marginBottom: 15 }}>
         <Text style={{ marginBottom: 5, fontWeight: "bold" }}>Email</Text>
@@ -44,6 +51,7 @@ export default function LoginScreen() {
           value={email}
           onChangeText={setEmail}
           style={{ borderWidth: 1, borderRadius: 6, padding: 10 }}
+          autoCapitalize="none"
         />
       </View>
 

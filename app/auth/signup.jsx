@@ -1,7 +1,7 @@
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useAuth } from "../../context/AuthContext";
 
 export default function SignupScreen() {
   const [name, setName] = useState("");
@@ -11,12 +11,18 @@ export default function SignupScreen() {
   const { signup } = useAuth();
   const router = useRouter();
 
+  useEffect(() => {
+    if (!error) return;
+    const t = setTimeout(() => setError(""), 3000);
+    return () => clearTimeout(t);
+  }, [error]);
+
   const handleSignup = async () => {
     try {
       await signup(name, email, password);
       router.replace("/(tabs)/home");
     } catch (err) {
-      setError(err);
+      setError(String(err));
     }
   };
 
@@ -26,31 +32,32 @@ export default function SignupScreen() {
         Sign Up
       </Text>
 
-      <Text
-        style={{
-          marginBottom: 5,
-          color: "red",
-          textAlign: "center",
-          fontWeight: "bold",
-        }}
-      >
-        {setTimeout(() => {
-          error && setError("");
-        }, 3000) && error}
-      </Text>
+      {error ? (
+        <Text
+          style={{
+            marginBottom: 5,
+            color: "red",
+            textAlign: "center",
+            fontWeight: "bold",
+          }}
+        >
+          {error}
+        </Text>
+      ) : null}
 
-      {/* Name Field */}
+      {/* Name */}
       <View style={{ marginBottom: 15 }}>
         <Text style={{ marginBottom: 5, fontWeight: "bold" }}>Name</Text>
         <TextInput
           placeholder="Enter your name"
           value={name}
           onChangeText={setName}
+          autoCapitalize="words"
           style={{ borderWidth: 1, borderRadius: 6, padding: 10 }}
         />
       </View>
 
-      {/* Email Field */}
+      {/* Email */}
       <View style={{ marginBottom: 15 }}>
         <Text style={{ marginBottom: 5, fontWeight: "bold" }}>Email</Text>
         <TextInput
@@ -58,10 +65,11 @@ export default function SignupScreen() {
           value={email}
           onChangeText={setEmail}
           style={{ borderWidth: 1, borderRadius: 6, padding: 10 }}
+          autoCapitalize="none"
         />
       </View>
 
-      {/* Password Field */}
+      {/* Password */}
       <View style={{ marginBottom: 15 }}>
         <Text style={{ marginBottom: 5, fontWeight: "bold" }}>Password</Text>
         <TextInput
@@ -73,7 +81,6 @@ export default function SignupScreen() {
         />
       </View>
 
-      {/* Styled Signup Button */}
       <TouchableOpacity
         onPress={handleSignup}
         style={{
@@ -88,7 +95,6 @@ export default function SignupScreen() {
         </Text>
       </TouchableOpacity>
 
-      {/* Login link */}
       <View style={{ marginTop: 20, alignItems: "center" }}>
         <Text>
           Already have an account?{" "}

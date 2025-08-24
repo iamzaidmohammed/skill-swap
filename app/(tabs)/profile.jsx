@@ -1,5 +1,6 @@
 import { useAuth } from "@/context/AuthContext";
-import React, { useState } from "react";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
   Modal,
   StyleSheet,
@@ -10,8 +11,8 @@ import {
 } from "react-native";
 
 export default function Profile() {
-  // const [user, setUser] = useState(null);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editedUser, setEditedUser] = useState(user);
@@ -19,6 +20,11 @@ export default function Profile() {
   const handleSave = () => {
     // setUser(editedUser);
     setModalVisible(false);
+  };
+
+  const signout = () => {
+    logout();
+    router.replace("/auth/login");
   };
 
   return (
@@ -51,7 +57,10 @@ export default function Profile() {
         <Text style={styles.buttonText}>Edit Profile</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.button, styles.logoutButton]}>
+      <TouchableOpacity
+        onPress={signout}
+        style={[styles.button, styles.logoutButton]}
+      >
         <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
 
