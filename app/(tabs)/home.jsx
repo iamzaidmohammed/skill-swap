@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -6,50 +7,67 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-const skills = [
-  {
-    id: "1",
-    offered: "Guitar Lessons",
-    wanted: "Cooking Lessons",
-    user: "Alice",
-    contact: "alice@email.com",
-  },
-  {
-    id: "2",
-    offered: "Graphic Design",
-    wanted: "Spanish Tutoring",
-    user: "Bob",
-    contact: "bob@email.com",
-  },
-  {
-    id: "3",
-    offered: "Web Development",
-    wanted: "Public Speaking",
-    user: "Charlie",
-    contact: "charlie@email.com",
-  },
-];
+import API from "../../api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Home() {
+  const { user } = useAuth();
+  const [skills, setSkills] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchPublicSkills = async () => {
+    try {
+      setLoading(true);
+      // public endpoint: list all skills excluding the authenticated user's
+      const res = await API.get("/skills/public");
+      setSkills(res.data || []);
+    } catch (err) {
+      console.log(
+        "Fetch public skills error:",
+        err.response?.data || err.message
+      );
+      setSkills([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPublicSkills();
+  }, [user]);
+
+  const requestExchange = async (skillId) => {
+    try {
+      await API.post("/requests", {
+        skillId,
+        message: "I'd like to swap skills",
+      });
+      Alert.alert("Request sent", "The owner will be notified");
+    } catch (err) {
+      console.log("Request error:", err.response?.data || err.message);
+      Alert.alert(
+        "Request failed",
+        err.response?.data?.msg || err.message || "Could not send request"
+      );
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Available Skills</Text>
 
       <FlatList
         data={skills}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.offered}>{item.offered}</Text>
             <Text style={styles.text}>Wants: {item.wanted}</Text>
-            <Text style={styles.text}>By: {item.user}</Text>
+            <Text style={styles.text}>By: {item.user?.name || item.user}</Text>
 
             <TouchableOpacity
               style={styles.button}
-              onPress={() =>
-                Alert.alert("Contact Info", `Reach out at: ${item.contact}`)
-              }
+              onPress={() => requestExchange(item._id)}
             >
               <Text style={styles.buttonText}>Request Exchange</Text>
             </TouchableOpacity>

@@ -36,6 +36,18 @@ router.get("/", requireAuth, async (req, res) => {
   }
 });
 
+// GET /api/skills/public - list all skills except the authenticated user's
+router.get("/public", requireAuth, async (req, res) => {
+  try {
+    const skills = await Skill.find({ user: { $ne: req.userId } })
+      .populate("user", "name email")
+      .sort({ createdAt: -1 });
+    res.json(skills);
+  } catch (e) {
+    res.status(500).json({ msg: "Server error: " + e.message });
+  }
+});
+
 // POST /api/skills - add a skill
 router.post("/", requireAuth, async (req, res) => {
   try {

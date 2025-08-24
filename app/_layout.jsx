@@ -20,6 +20,7 @@ function RootAfterAuthLoad() {
       <Stack.Screen name="auth/login" />
       <Stack.Screen name="auth/signup" />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="requests" options={{ title: "Requests" }} />
     </Stack>
   );
 }
