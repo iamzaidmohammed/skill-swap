@@ -1,6 +1,6 @@
 // context/AuthContext.jsx
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import API from "../api";
 
 const AuthContext = createContext();
@@ -44,7 +44,8 @@ export function AuthProvider({ children }) {
       API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       setUser(user);
     } catch (err) {
-      throw err.response?.data?.msg || "Login failed";
+      const msg = err.response?.data?.msg || err.message || "Login failed";
+      throw msg;
     }
   };
 
@@ -55,7 +56,9 @@ export function AuthProvider({ children }) {
       // optionally auto-login after register
       await login(email, password);
     } catch (err) {
-      throw err.response?.data?.msg || "Registration failed";
+      const msg =
+        err.response?.data?.msg || err.message || "Registration failed";
+      throw msg;
     }
   };
 
