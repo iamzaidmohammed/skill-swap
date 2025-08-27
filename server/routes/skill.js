@@ -39,10 +39,24 @@ router.get("/", requireAuth, async (req, res) => {
 // GET /api/skills/public - list all skills except the authenticated user's
 router.get("/public", requireAuth, async (req, res) => {
   try {
+    const Request = require("../model/Request");
+    
+    // Get all skills except the authenticated user's
     const skills = await Skill.find({ user: { $ne: req.userId } })
       .populate("user", "name email")
       .sort({ createdAt: -1 });
-    res.json(skills);
+    
+    // Get all requests made by the current user
+    const userRequests = await Request.find({ from: req.userId });
+    const requestedSkillIds = userRequests.map(req => req.skill.toString());
+    
+    // Add requested status to each skill
+    const skillsWithRequestStatus = skills.map(skill => ({
+      ...skill.toObject(),
+      requested: requestedSkillIds.includes(skill._id.toString())
+    }));
+    
+    res.json(skillsWithRequestStatus);
   } catch (e) {
     res.status(500).json({ msg: "Server error: " + e.message });
   }

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    FlatList,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import API from "../../api";
 import { useAuth } from "../../context/AuthContext";
@@ -20,7 +20,9 @@ export default function Home() {
       setLoading(true);
       // public endpoint: list all skills excluding the authenticated user's
       const res = await API.get("/skills/public");
-      setSkills(res.data || []);
+      // Filter out skills that have already been requested
+      const availableSkills = (res.data || []).filter(skill => !skill.requested);
+      setSkills(availableSkills);
     } catch (err) {
       console.log(
         "Fetch public skills error:",
@@ -42,7 +44,14 @@ export default function Home() {
         skillId,
         message: "I'd like to swap skills",
       });
-      Alert.alert("Request sent", "The owner will be notified");
+      // Update the local state to mark this skill as requested
+      setSkills(prevSkills => 
+        prevSkills.map(skill => 
+          skill._id === skillId 
+            ? { ...skill, requested: true }
+            : skill
+        )
+      );
     } catch (err) {
       console.log("Request error:", err.response?.data || err.message);
       Alert.alert(
@@ -65,12 +74,18 @@ export default function Home() {
             <Text style={styles.text}>Wants: {item.wanted}</Text>
             <Text style={styles.text}>By: {item.user?.name || item.user}</Text>
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => requestExchange(item._id)}
-            >
-              <Text style={styles.buttonText}>Request Exchange</Text>
-            </TouchableOpacity>
+            {item.requested ? (
+              <View style={styles.requestedButton}>
+                <Text style={styles.requestedButtonText}>Request Sent</Text>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => requestExchange(item._id)}
+              >
+                <Text style={styles.buttonText}>Request Exchange</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
       />
@@ -116,6 +131,19 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   buttonText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "600",
+    fontSize: 15,
+  },
+  requestedButton: {
+    backgroundColor: "#6c757d",
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 12,
+    opacity: 0.7,
+  },
+  requestedButtonText: {
     color: "#fff",
     textAlign: "center",
     fontWeight: "600",

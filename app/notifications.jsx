@@ -38,19 +38,6 @@ export default function NotificationsScreen() {
       }
     };
 
-    let notificationText = "";
-    let subtitle = "";
-
-    switch (item.type) {
-      case "request_accepted":
-        notificationText = `Your skill request was accepted!`;
-        subtitle = `Contact ${user.name || "the user"} at '${user.email || "their email"}' to arrange the skill swap.`;
-        break;
-      default:
-        notificationText = "You have a new notification";
-        subtitle = "Tap to view details";
-    }
-
     return (
       <TouchableOpacity
         onPress={handlePress}
@@ -59,8 +46,8 @@ export default function NotificationsScreen() {
           !item.read && styles.unreadCard
         ]}
       >
-        <Text style={styles.title}>{notificationText}</Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
+        <Text style={styles.title}>{'Your skill request was accepted!'}</Text>
+        <Text style={styles.subtitle}>{`Contact ${item.data.accepterName || "the user"} at '${item.data.accepterEmail || "their email"}' to arrange the skill swap.`}</Text>
         <Text style={styles.timestamp}>
           {new Date(item.createdAt).toLocaleDateString()} at {new Date(item.createdAt).toLocaleTimeString()}
         </Text>
