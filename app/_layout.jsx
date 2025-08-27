@@ -1,4 +1,5 @@
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { NotificationProvider } from "@/context/NotificationContext";
 import { SkillProvider } from "@/context/SkillContext";
 import { Stack } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
@@ -21,6 +22,7 @@ function RootAfterAuthLoad() {
       <Stack.Screen name="auth/signup" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="requests" options={{ title: "Requests" }} />
+      <Stack.Screen name="notifications" options={{ title: "Notifications" }} />
     </Stack>
   );
 }
@@ -29,7 +31,9 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <SkillProvider>
-        <RootAfterAuthLoad />
+        <NotificationProvider>
+          <RootAfterAuthLoad />
+        </NotificationProvider>
       </SkillProvider>
     </AuthProvider>
   );

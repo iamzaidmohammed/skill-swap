@@ -1,43 +1,28 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import API from "../../api";
 import { useAuth } from "../../context/AuthContext";
+import { useNotifications } from "../../context/NotificationContext";
 
 function NotificationButton() {
   const router = useRouter();
   const { user } = useAuth();
-  const [count, setCount] = useState(0);
-
-  const fetchCount = async () => {
-    try {
-      const res = await API.get("/requests/received");
-      const items = res.data || [];
-      const pending = items.filter((i) => i.status === "pending").length;
-      setCount(pending);
-    } catch (err) {
-      console.log(
-        "Fetch requests count error:",
-        err.response?.data || err.message
-      );
-      setCount(0);
-    }
-  };
-
-  useEffect(() => {
-    if (!user) return;
-    fetchCount();
-    const t = setInterval(fetchCount, 30000); // refresh every 30s
-    return () => clearInterval(t);
-  }, [user]);
+  const { unreadCount, markAllRead } = useNotifications();
 
   return (
-    <TouchableOpacity onPress={() => router.push("/requests")} style={s.button}>
+    <TouchableOpacity
+      onPress={() => {
+        router.push("/notifications");
+        // optimistically clear unread badge
+        if (user) markAllRead();
+      }}
+      style={s.button}
+    >
       <Ionicons name="notifications" size={22} color="#000" />
-      {count > 0 ? (
+      {unreadCount > 0 ? (
         <View style={s.badge}>
-          <Text style={s.badgeText}>{count}</Text>
+          <Text style={s.badgeText}>{unreadCount}</Text>
         </View>
       ) : null}
     </TouchableOpacity>

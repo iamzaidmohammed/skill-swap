@@ -1,6 +1,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const Request = require("../model/Request");
+const Notification = require("../model/Notification");
 const Skill = require("../model/Skill");
 
 const router = express.Router();
@@ -77,7 +78,49 @@ router.post("/:id/respond", requireAuth, async (req, res) => {
     reqItem.status = action === "accept" ? "accepted" : "declined";
     await reqItem.save();
 
+    // If accepted, create a notification for the requester
+    if (action === "accept") {
+      try {
+        // Get the current user's information to include email in notification
+        const User = require("../model/User");
+        const currentUser = await User.findById(req.userId);
+        
+        const note = await Notification.create({
+          user: reqItem.from,
+          from: req.userId,
+          type: "request_accepted",
+          data: { 
+            requestId: reqItem._id, 
+            skillId: reqItem.skill._id,
+            accepterEmail: currentUser.email,
+            accepterName: currentUser.name
+          },
+        });
+        // emit via socket if connected
+        try {
+          req.app.locals.emitNotification(reqItem.from.toString(), note);
+        } catch (e) {
+          console.log("Emit notification error:", e.message);
+        }
+      } catch (nerr) {
+        console.log("Notification create error:", nerr.message);
+      }
+    }
+
     res.json(reqItem);
+  } catch (e) {
+    res.status(500).json({ msg: "Server error: " + e.message });
+  }
+});
+
+// GET /api/notifications - list notifications for authenticated user
+router.get("/../notifications", requireAuth, async (req, res) => {
+  try {
+    // route path is /api/notifications because of how this file is mounted
+    const notes = await Notification.find({ user: req.userId })
+      .populate("from")
+      .sort({ createdAt: -1 });
+    res.json(notes);
   } catch (e) {
     res.status(500).json({ msg: "Server error: " + e.message });
   }
